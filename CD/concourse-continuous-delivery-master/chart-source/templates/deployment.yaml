@@ -1,0 +1,47 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ template "fullname" . }}
+  labels:
+    app: {{ template "name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 0
+  replicas: {{ .Values.replicaCount }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/config-map.yaml") . | sha256sum }}
+      labels:
+        app: {{ template "name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          {{- if .Values.image.digest }}
+          image: "{{ .Values.image.repository }}@{{ .Values.image.digest }}"
+          {{- else }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          {{- end }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.service.internalPort }}
+          livenessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.service.internalPort }}
+          readinessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.service.internalPort }}
+          volumeMounts:
+          - name: static-content
+            mountPath: /usr/share/nginx/html
+      volumes:
+        - name: static-content
+          configMap:
+            name: {{ template "fullname" . }}-static

@@ -1,0 +1,89 @@
+---
+platform: linux
+
+resource_types:
+- name: helm
+  type: docker-image
+  source:
+    repository: gcr.io/cloud-solutions-images/concourse-helm-gcp
+    tag: v0.2.2
+
+- name: git-gcp
+  type: docker-image
+  source:
+    repository: gcr.io/cloud-solutions-images/concourse-git-gcp
+    tag: v0.4.0
+
+resources:
+- name: {{release_name}}
+  type: helm
+  source:
+    release: {{release_name}}
+    cluster_url: https://kubernetes
+    cluster_ca: {{cluster_ca}}
+    token: {{token}}
+    repos:
+    - name: gcs-repo
+      url: gs://((bucket))
+
+- name: app-image
+  type: docker-image
+  source:
+    repository: gcr.io/((project))/app-image
+    username: _json_key
+    password: {{service_account_json}}
+
+- name: chart-source
+  type: git-gcp
+  source:
+    uri: https://source.developers.google.com/p/((project))/r/chart-source
+    branch: master
+    tag_filter: v*
+    git_config:
+      - name: credential.helper
+        value: gcloud.sh
+
+- name: app-source
+  type: git-gcp
+  source:
+    uri: https://source.developers.google.com/p/((project))/r/app-source
+    branch: master
+    tag_filter: v*
+    git_config:
+      - name: credential.helper
+        value: gcloud.sh
+
+jobs:
+  - name: build-image
+    plan:
+    - get: app-source
+      trigger: true
+    - task: get-version
+      file: app-source/tasks/get-version.yaml
+    - put: app-image
+      params:
+        build: app-source
+        tag: app-version/version
+        tag_as_latest: true
+
+  - name: deploy-chart
+    plan:
+    - get: app-image
+      trigger: true
+      passed:
+      - build-image
+    - get: chart-source
+      trigger: true
+    - task: build-chart
+      file: chart-source/tasks/prep-chart.yaml
+      params:
+        bucket: {{bucket}}
+        chart_name: {{chart_name}}
+    - put: {{release_name}}
+      params:
+        chart: gcs-repo/{{chart_name}}
+        override_values:
+        - key: image.repository
+          path: app-image/repository
+        - key: image.digest
+          path: app-image/digest

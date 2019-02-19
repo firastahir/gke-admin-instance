@@ -1,0 +1,1 @@
+kubectl.sh apply -f https://spinnaker.io/downloads/kubernetes/quick-install.yml
