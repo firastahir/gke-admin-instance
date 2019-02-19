@@ -1,0 +1,153 @@
+1. Create a job that calculates pi to 2000 decimal points using the container with the image named perl and the following entry point to the container:
+
+ ["perl",  "-Mbignum=bpi", "-wle", "print bpi(2000)"]
+Once the job has completed, save the result to your home directory in a file called pi.result.txt.
+
+
+
+
+
+2. Create yaml for a pod that uses the nginx image and listens on port 80. The pod should have the name nginx-pod and be labeled with app: nginx. Save the yaml to your home directory as nginx-pod.yaml and start the pod.
+
+
+
+
+
+3. Create yaml for a deployment of two replicas of nginx, listening on the container's port 80. They should bear the label of tier=frontend and app-nginx. The deployment should be named nginx-deployment. Leave a copy of the yaml in your home directory with the name nginx-deployment.yaml.
+
+
+
+
+
+4. Create a pod called "with-files" with an nginx image listening on port 80. The pod should attach to emptyDir storage, mounted to /tmp in the container. Connect to the pod and create a file with zero bytes in the /tmp directory called "linuxacademy.txt." Do not delete this pod. If you create other artifacts in the course working on this, you may delete them from your home directory or create a directory called "extras" in your home directory and move the files there.
+
+
+
+
+
+5. Label the worker node of your cluster with rack=qa.
+
+
+
+
+
+6. Create a file called counter.yaml in your home directory and paste the following yaml into it:
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: counter
+spec:
+  containers:
+  - name: count
+    image: busybox
+    args: [/bin/sh, -c, 'i=0; while true; do echo "$i: $(date)"; i=$((i+1)); sleep 1; done']
+Start this pod. Once its logs exceed a count of 20 (no need to be precise, any time after it has reached 20 is fine) save the logs into a file in your home directory called count.result.txt. Delete the pod.
+
+
+
+
+
+7. Create a deployment with two replicas of nginx:1.7.9. The container listens on port 80. It should be named "web-dep" and be labeled with tier=frontend with an annotation of AppVersion=3.4. The containers must be running with the UID of 1000.
+
+ 
+
+8. Upgrade the image in use by the web-dep deployment to nginx:1.9
+
+
+
+
+
+9. Roll the image in use by the web-dep deployment to the previous version. Do not set the version number of the image explicitly for this command.
+
+
+
+
+
+10. Scale the number of replicas of the web-dep deployment up to 3.
+
+
+
+
+
+11. Expose the web-dep deployment as a service using a NodePort.
+
+
+
+
+
+12. Configure a DaemonSet to run the image k8s.gcr.io/pause:2.0 in the cluster.
+
+
+
+
+
+13. Configure the cluster to use 8.8.8.8 and 8.8.4.4 as upstream DNS servers.
+
+
+
+
+
+14. A legacy application (yaml below) requires that the IP address or host name of the web-dep endpoint be configured as an environment variable called "FROBOZZ" in the container. Alter the yaml accordingly, leave a copy in your home directory with the name zork.yaml, and start the pod.
+
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: zork
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: zork-app
+  template:
+    metadata:
+      labels:
+        app: zork-app
+    spec:
+      containers:
+      - name: p114
+        image: k8s.gcr.io/pause:2.0
+
+
+
+
+15. Create a pod using the k8s.gcr.io/pause:20 container image that is allowed to run on the master node if necessary, but does not have to be scheduled there.
+
+
+
+
+
+16. Copy all Kubernetes Scheduler logs into a logs directory in your home directory.
+
+
+
+
+
+17. Run the pod below until the counter in its stdout exceeds 20 (no need to be precise) and then extract the legacy log file to the logs directory in your home directory. Delete the pod.
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: counter2
+spec:
+  containers:
+  - name: count
+    image: busybox
+    args: [/bin/sh, -c, 'i=0; while true; do echo "$i: $(date)"; echo "$(date) - File - $i" >> /var/www/countlog; i=$((i+1)); sleep 3; done']
+
+
+
+
+18. Build a default network policy that disallows all traffic to pods in the default namespace.
+
+
+
+
+
+19. Remove the taint from the master node so it can now accept any work -- even from nodes with no tolerations of the master node.
+
+
+
+
+
+20. Create a yaml file for a secret called my-secret and saved in a file in your home directory called my-secret.yaml. The secret should have two fields: a username and password. The username should be set to "admin" and the password should be set to "iHeartKittens"

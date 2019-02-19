@@ -1,0 +1,12 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: jenkins-operator
+spec:
+  type: LoadBalancer
+  selector:
+    app: jenkins-operator
+  ports:
+  - name: http
+    protocol: TCP
+    port: 8080

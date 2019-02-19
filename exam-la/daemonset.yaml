@@ -1,0 +1,17 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: pause
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      name: pause
+  template:
+    metadata:
+      labels:
+        name: pause
+    spec:
+      containers:
+      - name: pause
+        image: k8s.gcr.io/pause:2.0

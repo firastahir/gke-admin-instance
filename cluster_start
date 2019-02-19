@@ -1,0 +1,12 @@
+#!/bin/bash
+gcloud container clusters create my-k8s --machine-type n1-standard-2 --enable-network-policy --enable-autoscaling --min-nodes=2 --max-nodes=4 --num-nodes=2 --zone us-central1-b
+sleep 5
+echo "Installing Helm"
+kubectl create clusterrolebinding user-admin-binding --clusterrole=cluster-admin --user=$(gcloud config get-value account)
+kubectl create serviceaccount tiller --namespace kube-system
+kubectl create clusterrolebinding tiller-admin-binding --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
+helm init --service-account=tiller
+helm update
+sleep 20
+helm version
+helm repo update
