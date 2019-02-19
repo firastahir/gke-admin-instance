@@ -1,0 +1,14 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+name: joomla-ingress
+annotations:
+    kubernetes.io/ingress.class: nginx
+spec:
+rules:
+- http:
+    paths:
+    # - path: /
+        backend:
+        serviceName: ingress-example-joomla
+        servicePort: 80
